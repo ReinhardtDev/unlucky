@@ -1,4 +1,4 @@
-package com.unlucky.unlucky;
+package com.unlucky.unlucky.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
