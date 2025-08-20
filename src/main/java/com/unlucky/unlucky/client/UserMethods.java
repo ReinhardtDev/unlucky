@@ -28,4 +28,8 @@ public class UserMethods {
         System.out.println("Email: " + user.getEmail());
         System.out.println("Balance: " + user.getBalance());
     }
+
+    public void addCurrency(String username) {
+        
+    }
 }

@@ -1,14 +1,10 @@
 package com.unlucky.unlucky.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.Scanner;
 
 public class ClientApp {
 
-    private final Connection connection = new Connection("http://localhost:8080");
-    private final ObjectMapper mapper = new ObjectMapper();
     private final UserMethods userMethods = new UserMethods();
     private final Scanner input = new Scanner(System.in);
     private String currentUser = null;
@@ -75,6 +71,7 @@ public class ClientApp {
             case "1" -> {
                 System.out.println("Viewing profile");
                 userMethods.displayUserProfile(currentUser);
+                input.nextLine();
                 homeMenu();
             }
             case "2" -> {
@@ -83,7 +80,10 @@ public class ClientApp {
             case "3" -> {
                 System.out.println("Select game");
             }
-            case "9" -> currentUser = null;
+            case "9" -> {
+                currentUser = null;
+                startClient();
+            }
             case "0" -> {
                 System.out.println("Goodbye!");
                 System.exit(0);

@@ -1,5 +1,6 @@
 package com.unlucky.unlucky.server.user;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,5 +30,10 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Transactional
+    public String addCurrency(){
+        return "currency added";
     }
 }
