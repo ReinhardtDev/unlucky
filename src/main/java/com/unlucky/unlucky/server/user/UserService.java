@@ -2,6 +2,7 @@ package com.unlucky.unlucky.server.user;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,7 +19,15 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> getUserByUsername(String username) {
+    public Optional<String> getUserByUsername(String username) {
+        return userRepository.returnUsername(username);
+    }
+
+    public Optional<User> getProfileByName(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }

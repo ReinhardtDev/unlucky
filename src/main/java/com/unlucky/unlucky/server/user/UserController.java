@@ -19,8 +19,13 @@ public class UserController {
         return userService.createUser(user.getUsername(), user.getEmail());
     }
 
-    @GetMapping("/{username}")
-    public Optional<User> getUser(@PathVariable String username) {
+    @GetMapping("/{username}/username")
+    public Optional<String> getUser(@PathVariable String username) {
         return userService.getUserByUsername(username);
+    }
+
+    @GetMapping("/{username}/profile")
+    public Optional<User> getProfile(@PathVariable String username) {
+        return userService.getProfileByName(username);
     }
 }
