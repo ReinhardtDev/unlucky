@@ -29,7 +29,13 @@ public class UserMethods {
         System.out.println("Balance: " + user.getBalance());
     }
 
-    public void addCurrency(String username) {
+    public void addCurrency(String username, int amount) {
         
+    }
+
+    public boolean isValidEmail(String email) {
+        if(email == null) return false;
+        String regex = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+        return email.matches(regex);
     }
 }
