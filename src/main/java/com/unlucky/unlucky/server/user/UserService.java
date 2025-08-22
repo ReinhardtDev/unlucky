@@ -33,7 +33,9 @@ public class UserService {
     }
 
     @Transactional
-    public String addCurrency(){
-        return "currency added";
+    public User addCurrency(String username, int amount){
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("username not found"));
+        user.setBalance(user.getBalance() + amount);
+        return userRepository.save(user);
     }
 }

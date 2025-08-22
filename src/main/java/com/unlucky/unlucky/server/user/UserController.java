@@ -2,6 +2,7 @@ package com.unlucky.unlucky.server.user;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Currency;
 import java.util.Optional;
 
 @RestController
@@ -27,5 +28,10 @@ public class UserController {
     @GetMapping("/{username}/profile")
     public Optional<User> getProfile(@PathVariable String username) {
         return userService.getProfileByName(username);
+    }
+
+    @PostMapping("/{username}/add-currency")
+    public User addCurrency(@PathVariable String username, @RequestParam int amount) {
+        return userService.addCurrency(username, amount);
     }
 }

@@ -30,7 +30,7 @@ public class UserMethods {
     }
 
     public void addCurrency(String username, int amount) {
-        
+        connection.sendPostRequest("{}", "/api/users/" + username + "/add-currency?amount=" + amount);
     }
 
     public boolean isValidEmail(String email) {

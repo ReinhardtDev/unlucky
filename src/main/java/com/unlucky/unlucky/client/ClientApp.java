@@ -17,6 +17,8 @@ public class ClientApp {
             try {
                 if (currentUser == null) {
                     running = loginScreen();
+                } else if (currentUser.equals("admin")) {
+                    running = adminMenu();
                 } else {
                     running = homeMenu();
                 }
@@ -39,12 +41,16 @@ public class ClientApp {
                 System.out.println("___LOGIN___");
                 System.out.print("Enter username: ");
                 String userInput = input.nextLine().trim();
-                String userName = userMethods.returnUserByName(userInput);
-                if (userName == null) {
-                    System.out.println("User does not exist");
+                if (userInput.equals("admin")) {
+                    currentUser = "admin";
                 } else {
-                    System.out.println("Logged in as " + userName);
-                    currentUser = userName;
+                    String userName = userMethods.returnUserByName(userInput);
+                    if (userName == null) {
+                        System.out.println("User does not exist");
+                    } else {
+                        System.out.println("Logged in as " + userName);
+                        currentUser = userName;
+                    }
                 }
             }
             case "2" -> {
@@ -87,6 +93,36 @@ public class ClientApp {
                 System.out.println("Successfully registered!");
                 currentUser = userMethods.returnUserByName(username);
 
+            }
+            case "0" -> {
+                return false;
+            }
+            default -> System.out.println("Invalid choice");
+        }
+        return true;
+    }
+
+    private boolean adminMenu() throws JsonProcessingException {
+        System.out.println("___ADMIN___");
+        System.out.println("1) View a user profile 2) View all users 9) Logout 0) Quit");
+        System.out.print("> ");
+        String choice = input.nextLine().trim();
+
+        switch (choice) {
+            case "1" -> {
+                System.out.print("Enter a username: ");
+                String username = input.nextLine().trim();
+                if(userMethods.returnUserByName(username) != null) {
+                    userMethods.displayUserProfile(username);
+                } else System.out.println("User does not exist.");
+
+            }
+            case "2" -> {
+                System.out.println("View all users (not implemented)");
+            }
+            case "9" -> {
+                System.out.println("Logged out.");
+                currentUser = null;
             }
             case "0" -> {
                 return false;
