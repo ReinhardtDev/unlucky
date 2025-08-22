@@ -68,6 +68,10 @@ public class ClientApp {
                         System.out.println("Username must be at least 3 characters.");
                         continue;
                     }
+                    if (username.equalsIgnoreCase("admin")) {
+                        System.out.println("this is a reserved username.");
+                        continue;
+                    }
                     if (userMethods.returnUserByName(username) != null) {
                         System.out.println("Username already exists. Try another.");
                         continue;
