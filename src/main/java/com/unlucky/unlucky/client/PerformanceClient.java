@@ -1,8 +1,5 @@
 package com.unlucky.unlucky.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
