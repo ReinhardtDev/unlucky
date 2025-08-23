@@ -2,10 +2,12 @@ package com.unlucky.unlucky.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unlucky.unlucky.logging.LoggingService;
 import com.unlucky.unlucky.server.user.User;
 
 public class UserMethods {
 
+    private final LoggingService loggingService = new LoggingService();
     private final Connection connection = new Connection("http://localhost:8080");
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -18,8 +20,12 @@ public class UserMethods {
     }
 
     public void registerUser(String username, String email){
+        long start = System.nanoTime();
         String json = String.format("{\"username\":\"%s\", \"email\":\"%s\"}", username, email);
         connection.sendPostRequest(json, "/api/users/register");
+        long end = System.nanoTime();
+        long elapsed = (end - start) / 1000000;
+        loggingService.log(LoggingService.ACTION.REGISTER_USER, elapsed);
     }
 
     public void displayUserProfile(String username) throws JsonProcessingException {
