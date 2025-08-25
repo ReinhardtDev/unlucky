@@ -24,7 +24,7 @@ public class UserMethods {
         String json = String.format("{\"username\":\"%s\", \"email\":\"%s\"}", username, email);
         connection.sendPostRequest(json, "/api/users/register");
         long end = System.nanoTime();
-        long elapsed = (end - start) / 1000000;
+        double elapsed = (double) (end - start) / 1000000;
         loggingService.log(LoggingService.ACTION.REGISTER_USER, elapsed);
     }
 
