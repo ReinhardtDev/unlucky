@@ -9,22 +9,28 @@ import java.time.format.DateTimeFormatter;
 
 public class LoggingService {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:ms");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final File logFile = new File("LOG.txt");
 
     public enum ACTION {
         REGISTER_USER,
+        AVERAGE_TIME,
         PURCHASE
     }
 
     public LoggingService() {
     }
 
-    public void log(ACTION action, Long... time) {
+    public void log(ACTION action, double... time) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFile, true))) {
             String timeStamp = LocalDateTime.now().format(formatter);
-            writer.println("[" + timeStamp + "] " + action.toString() + " in " + time[0] + "ms");
-            writer.flush();
+            if (action != ACTION.AVERAGE_TIME) {
+                writer.println("[" + timeStamp + "] " + action.toString() + " in " + time[0] + "ms");
+                writer.flush();
+            } else {
+                writer.println("[" + timeStamp + "] " + action + ": " + time[0] + "ms");
+            }
+
 
 
         } catch (IOException e) {
