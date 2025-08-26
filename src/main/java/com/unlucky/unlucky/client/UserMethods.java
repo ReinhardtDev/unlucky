@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unlucky.unlucky.logging.LoggingService;
 import com.unlucky.unlucky.server.user.User;
 
-import java.io.IOException;
-
 public class UserMethods {
 
     private final LoggingService loggingService = new LoggingService();
