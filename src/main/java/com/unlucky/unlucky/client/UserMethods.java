@@ -25,7 +25,7 @@ public class UserMethods {
         connection.restPostRequest(json, "/api/users/register");
         long end = System.nanoTime();
         double elapsed = (double) (end - start) / 1000000;
-        loggingService.log(LoggingService.ACTION.REGISTER_USER, elapsed);
+        loggingService.log(LoggingService.ACTION.REGISTER_USER, elapsed, username);
     }
 
     public void displayUserProfile(String username) throws JsonProcessingException {
