@@ -1,15 +1,10 @@
 package com.unlucky.unlucky.client;
 
-import com.unlucky.unlucky.logging.LoggingService;
-import com.unlucky.unlucky.server.games.service.LotteryService;
-import org.springframework.context.ApplicationContext;
 import java.util.*;
 
 public class LotteryMethods {
 
     private final UserMethods userMethods;
-    private LotteryService lotteryService;
-    private LoggingService loggingService;
 
     private final Map<String, List<ClassicTicket>> classicTickets = new HashMap<>();
     private final Map<String, List<Lotto649Ticket>> lotto649Tickets = new HashMap<>();
@@ -17,25 +12,10 @@ public class LotteryMethods {
 
     public LotteryMethods() {
         this.userMethods = new UserMethods();
-        initializeLotteryService();
-    }
-
-    private void initializeLotteryService() {
-        try {
-            ApplicationContext context = UserMethods.getContext();
-            if (context != null) {
-                this.loggingService = context.getBean(LoggingService.class);
-                this.lotteryService = context.getBean(LotteryService.class);
-            }
-        } catch (Exception e) {
-            System.err.println("LotteryService not available, using in-memory storage: " + e.getMessage());
-        }
     }
 
     public String purchaseClassicTicket(String username, int quantity) {
         try {
-            long start = System.nanoTime();
-
             int cost = quantity * 2;
             int currentBalance = userMethods.getBalance(username);
 
@@ -43,33 +23,17 @@ public class LotteryMethods {
                 throw new RuntimeException("Insufficient balance. Need: " + cost + ", Have: " + currentBalance);
             }
 
-            if (lotteryService != null) {
-                for (int i = 0; i < quantity; i++) {
-                    lotteryService.purchaseClassicTicket(username, 1);
-                }
-                userMethods.addCurrency(username, -cost);
+            userMethods.addCurrency(username, -cost);
 
-                long end = System.nanoTime();
-                double elapsed = (double) (end - start) / 1000000;
-                loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_CLASSIC, elapsed, username, String.valueOf(quantity));
+            List<ClassicTicket> userTickets = classicTickets.getOrDefault(username, new ArrayList<>());
 
-                return "Purchased " + quantity + " classic lottery tickets for " + cost + " currency";
-            } else {
-                userMethods.addCurrency(username, -cost);
-                List<ClassicTicket> userTickets = classicTickets.getOrDefault(username, new ArrayList<>());
-
-                for (int i = 0; i < quantity; i++) {
-                    String ticketNumber = generateTicketNumber();
-                    userTickets.add(new ClassicTicket(ticketNumber, false));
-                }
-                classicTickets.put(username, userTickets);
-
-                long end = System.nanoTime();
-                double elapsed = (double) (end - start) / 1000000;
-                loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_CLASSIC, elapsed, username, String.valueOf(quantity));
-
-                return "Purchased " + quantity + " classic lottery tickets for " + cost + " currency (in-memory)";
+            for (int i = 0; i < quantity; i++) {
+                String ticketNumber = generateTicketNumber();
+                userTickets.add(new ClassicTicket(ticketNumber, false));
             }
+
+            classicTickets.put(username, userTickets);
+            return "Purchased " + quantity + " classic lottery tickets for " + cost + " currency";
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to purchase ticket: " + e.getMessage());
@@ -99,20 +63,14 @@ public class LotteryMethods {
                 throw new RuntimeException("Insufficient balance. Need: " + cost + ", Have: " + currentBalance);
             }
 
-            if (lotteryService != null) {
-                lotteryService.purchaseLotto649Ticket(username, numbers);
-                userMethods.addCurrency(username, -cost);
-                return "Purchased Lotto 6/49 ticket with numbers: " + numbers + " for " + cost + " currency";
-            } else {
-                userMethods.addCurrency(username, -cost);
-                List<Lotto649Ticket> userTickets = lotto649Tickets.getOrDefault(username, new ArrayList<>());
+            userMethods.addCurrency(username, -cost);
+            List<Lotto649Ticket> userTickets = lotto649Tickets.getOrDefault(username, new ArrayList<>());
 
-                String ticketId = "L649-" + System.currentTimeMillis() + "-" + random.nextInt(1000);
-                userTickets.add(new Lotto649Ticket(ticketId, numbers, 0, false));
+            String ticketId = "L649-" + System.currentTimeMillis() + "-" + random.nextInt(1000);
+            userTickets.add(new Lotto649Ticket(ticketId, numbers, 0, false));
 
-                lotto649Tickets.put(username, userTickets);
-                return "Purchased Lotto 6/49 ticket with numbers: " + numbers + " for " + cost + " currency (in-memory)";
-            }
+            lotto649Tickets.put(username, userTickets);
+            return "Purchased Lotto 6/49 ticket with numbers: " + numbers + " for " + cost + " currency";
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to purchase ticket: " + e.getMessage());
@@ -121,18 +79,11 @@ public class LotteryMethods {
 
     public List<String> getUserClassicTickets(String username) {
         try {
-            if (lotteryService != null) {
-                return lotteryService.getUserClassicTickets(username).stream()
-                        .map(ticket -> "Ticket #" + ticket.getTicketNumber() +
-                                (ticket.isWinner() ? " - WINNER!" : ""))
-                        .toList();
-            } else {
-                List<ClassicTicket> tickets = classicTickets.getOrDefault(username, new ArrayList<>());
-                return tickets.stream()
-                        .map(ticket -> "Ticket #" + ticket.number +
-                                (ticket.isWinner ? " - WINNER!" : ""))
-                        .toList();
-            }
+            List<ClassicTicket> tickets = classicTickets.getOrDefault(username, new ArrayList<>());
+            return tickets.stream()
+                    .map(ticket -> "Ticket #" + ticket.number +
+                            (ticket.isWinner ? " - WINNER!" : ""))
+                    .toList();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get tickets: " + e.getMessage());
         }
@@ -140,20 +91,12 @@ public class LotteryMethods {
 
     public List<String> getUserLotto649Tickets(String username) {
         try {
-            if (lotteryService != null) {
-                return lotteryService.getUserLotto649Tickets(username).stream()
-                        .map(ticket -> "Numbers: " + ticket.getNumbers() +
-                                " - Matches: " + ticket.getMatchingNumbers() +
-                                (ticket.isWinner() ? " - WINNER!" : ""))
-                        .toList();
-            } else {
-                List<Lotto649Ticket> tickets = lotto649Tickets.getOrDefault(username, new ArrayList<>());
-                return tickets.stream()
-                        .map(ticket -> "Numbers: " + ticket.numbers +
-                                " - Matches: " + ticket.matchingNumbers +
-                                (ticket.isWinner ? " - WINNER!" : ""))
-                        .toList();
-            }
+            List<Lotto649Ticket> tickets = lotto649Tickets.getOrDefault(username, new ArrayList<>());
+            return tickets.stream()
+                    .map(ticket -> "Numbers: " + ticket.numbers +
+                            " - Matches: " + ticket.matchingNumbers +
+                            (ticket.isWinner ? " - WINNER!" : ""))
+                    .toList();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get tickets: " + e.getMessage());
         }
@@ -161,12 +104,7 @@ public class LotteryMethods {
 
     public void drawClassicLottery() {
         try {
-            if (lotteryService != null) {
-                lotteryService.drawClassicLottery();
-                System.out.println("Classic lottery draw completed using database!");
-            } else {
-                drawClassicLotteryInMemory();
-            }
+            drawClassicLotteryInMemory();
         } catch (Exception e) {
             throw new RuntimeException("Failed to draw classic lottery: " + e.getMessage());
         }
@@ -201,20 +139,13 @@ public class LotteryMethods {
             System.out.println("💰 Prize: " + prize + " currency");
         }
 
-        // Clear all tickets after draw
         classicTickets.clear();
         System.out.println("All classic lottery tickets have been cleared after the draw.");
     }
 
     public Map<String, Object> drawLotto649() {
         try {
-            if (lotteryService != null) {
-                Map<String, Object> result = lotteryService.drawLotto649();
-                System.out.println("Lotto 6/49 draw completed using database!");
-                return result;
-            } else {
-                return drawLotto649InMemory();
-            }
+            return drawLotto649InMemory();
         } catch (Exception e) {
             throw new RuntimeException("Failed to draw Lotto 6/49: " + e.getMessage());
         }
@@ -265,12 +196,8 @@ public class LotteryMethods {
 
     public int claimWinnings(String username) {
         try {
-            if (lotteryService != null) {
-                return lotteryService.claimWinnings(username);
-            } else {
-                System.out.println("Claiming winnings requires database connection");
-                return 0;
-            }
+            System.out.println("Winnings are automatically distributed during the draw.");
+            return 0;
         } catch (Exception e) {
             throw new RuntimeException("Failed to claim winnings: " + e.getMessage());
         }
@@ -278,13 +205,8 @@ public class LotteryMethods {
 
     public void startNewLotto649Round() {
         try {
-            if (lotteryService != null) {
-                lotteryService.startNewLotto649Round();
-                System.out.println("New Lotto 6/49 round started in database!");
-            } else {
-                lotto649Tickets.clear();
-                System.out.println("New Lotto 6/49 round started! All previous tickets have been cleared.");
-            }
+            lotto649Tickets.clear();
+            System.out.println("New Lotto 6/49 round started! All previous tickets have been cleared.");
         } catch (Exception e) {
             throw new RuntimeException("Failed to start new round: " + e.getMessage());
         }
@@ -292,14 +214,10 @@ public class LotteryMethods {
 
     public Map<String, Object> getCurrentLotto649Round() {
         try {
-            if (lotteryService != null) {
-                return lotteryService.getCurrentLotto649Round();
-            } else {
-                Map<String, Object> roundInfo = new HashMap<>();
-                roundInfo.put("ticketsSold", lotto649Tickets.values().stream().mapToInt(List::size).sum());
-                roundInfo.put("lastDraw", new Date());
-                return roundInfo;
-            }
+            Map<String, Object> roundInfo = new HashMap<>();
+            roundInfo.put("ticketsSold", lotto649Tickets.values().stream().mapToInt(List::size).sum());
+            roundInfo.put("lastDraw", new Date());
+            return roundInfo;
         } catch (Exception e) {
             throw new RuntimeException("Failed to get round info: " + e.getMessage());
         }
