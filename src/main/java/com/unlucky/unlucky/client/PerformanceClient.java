@@ -30,7 +30,7 @@ public class PerformanceClient {
         while (!executorService.isTerminated()) {}
         long end = System.nanoTime();
         //Divide by 1 mil for ms, then divide by 2000 for average -> divide by 2 bil
-        double elapsed = (double) (end - start) / 2000000000;
+        double elapsed = (double) (end - start) / 2000000000 * 20;
         loggingService.log(LoggingService.ACTION.AVERAGE_TIME, elapsed);
 
 
