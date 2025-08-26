@@ -45,11 +45,24 @@ public class UserMethods {
         return email.matches(regex);
     }
 
-    public void testTCPConnection() throws IOException {
-        connection.startConnection("localhost", 5000);
-        String response = connection.sendMessage("help");
-        System.out.println("Server response: " + response);
+    public int getBalance(String username) {
+        try {
+            User user = mapper.readValue(connection.sendGetRequest("/api/users/" + username + "/profile"), User.class);
+            return user.getBalance();
+        } catch (Exception e) {
+            System.err.println("Error getting balance: " + e.getMessage());
+            return 0; // Fallback balance
+        }
+    }
 
-        connection.stopConnection();
+    public User getUserProfile(String username) {
+        try {
+            return mapper.readValue(connection.sendGetRequest("/api/users/" + username + "/profile"), User.class);
+        } catch (Exception e) {
+            System.err.println("Error getting user profile: " + e.getMessage());
+            return null;
+        }
     }
 }
+
+  

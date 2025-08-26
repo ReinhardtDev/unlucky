@@ -1,13 +1,13 @@
 package com.unlucky.unlucky.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.*;
 
 public class ClientApp {
 
     private final UserMethods userMethods = new UserMethods();
+    private final LotteryMethods lotteryMethods = new LotteryMethods();
     private final Scanner input = new Scanner(System.in);
     private String currentUser = null;
 
@@ -26,7 +26,6 @@ public class ClientApp {
                 }
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
-                e.printStackTrace();
             }
         }
 
@@ -34,7 +33,7 @@ public class ClientApp {
     }
 
     private boolean loginScreen() throws JsonProcessingException {
-        System.out.println("\n1) Login 2) Register 0) Exit");
+        System.out.println("1) Login \n2) Register \n0) Exit");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -47,8 +46,8 @@ public class ClientApp {
                     currentUser = "admin";
                 } else {
                     String userName = userMethods.returnUserByName(userInput);
-                    if (userName == null) {
-                        System.out.println("User does not exist");
+                    if (userName == null || userName.isEmpty()) {
+                        System.out.println("User does not exist.");
                     } else {
                         System.out.println("Logged in as " + userName);
                         currentUser = userName;
@@ -57,21 +56,18 @@ public class ClientApp {
             }
             case "2" -> {
                 System.out.println("___REGISTER___");
-
                 String username;
                 while (true) {
                     System.out.println("Enter \"quit\" to quit");
                     System.out.print("Enter username: ");
                     username = input.nextLine().trim();
-
-                    if(username.equalsIgnoreCase("quit")) return true;
-
+                    if (username.equalsIgnoreCase("quit")) return true;
                     if (username.length() < 3) {
                         System.out.println("Username must be at least 3 characters.");
                         continue;
                     }
                     if (username.equalsIgnoreCase("admin")) {
-                        System.out.println("this is a reserved username.");
+                        System.out.println("This is a reserved username.");
                         continue;
                     }
                     if (userMethods.returnUserByName(username) != null) {
@@ -85,9 +81,7 @@ public class ClientApp {
                 while (true) {
                     System.out.print("Enter email: ");
                     email = input.nextLine().trim();
-
-                    if(email.equalsIgnoreCase("quit")) return true;
-
+                    if (email.equalsIgnoreCase("quit")) return true;
                     if (!userMethods.isValidEmail(email)) {
                         System.out.println("Invalid email address. Try again.");
                         continue;
@@ -98,11 +92,8 @@ public class ClientApp {
                 userMethods.registerUser(username, email);
                 System.out.println("Successfully registered!");
                 currentUser = userMethods.returnUserByName(username);
-
             }
-            case "0" -> {
-                return false;
-            }
+            case "0" -> { return false; }
             default -> System.out.println("Invalid choice");
         }
         return true;
@@ -110,7 +101,7 @@ public class ClientApp {
 
     private boolean adminMenu() throws IOException {
         System.out.println("___ADMIN___");
-        System.out.println("1) View a user profile 2) View all users 9) Logout 0) Quit");
+        System.out.println("1) View a user profile \n2) View all users \n3) Draw Classic Lottery \n4) Lotto 649 Management \n9) Logout \n0) Quit");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -118,68 +109,243 @@ public class ClientApp {
             case "1" -> {
                 System.out.print("Enter a username: ");
                 String username = input.nextLine().trim();
-                if(userMethods.returnUserByName(username) != null) {
+                if (userMethods.returnUserByName(username) != null) {
                     userMethods.displayUserProfile(username);
                 } else System.out.println("User does not exist.");
-
             }
             case "2" -> {
-                System.out.println("View all users (not implemented)");
+                System.out.println("View all users functionality would be implemented here");
+                // In a real implementation, this would list all users
             }
             case "3" -> {
-                userMethods.testTCPConnection();
+                System.out.println("🎰 Drawing Classic Lottery...");
+                lotteryMethods.drawClassicLottery();
+                // The draw method now handles all output including winner announcement
             }
+
+            case "4" -> lotto649AdminMenu();
+
             case "9" -> {
                 System.out.println("Logged out.");
                 currentUser = null;
             }
-            case "0" -> {
-                return false;
-            }
+            case "0" -> { return false; }
             default -> System.out.println("Invalid choice");
         }
         return true;
     }
 
-    private boolean homeMenu() throws JsonProcessingException {
-        System.out.println("\n___UNLUCKY_HOME_MENU___");
-        System.out.println("Logged in as " + currentUser);
-        System.out.println("1) View Profile 2) Add Currency 3) Select Game 9) Logout 0) Exit");
+    private void lotto649AdminMenu() {
+        System.out.println("___LOTTO_649_ADMIN___");
+        System.out.println("1) Draw Lotto 649 \n2) Start New Round \n3) View Round Info \n4) Back");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
         switch (choice) {
             case "1" -> {
-                System.out.println("Viewing profile...");
-                userMethods.displayUserProfile(currentUser);
+                System.out.println("Drawing Lotto 6/49...");
+                lotteryMethods.drawLotto649();
             }
             case "2" -> {
-                System.out.print("Enter amount of currency you would like to add: ");
+                System.out.print("Are you sure you want to start a new round? All existing tickets will be cleared. (y/n): ");
+                String confirm = input.nextLine().trim().toLowerCase();
+                if (confirm.equals("y") || confirm.equals("yes")) {
+                    lotteryMethods.startNewLotto649Round();
+                } else {
+                    System.out.println("Operation cancelled.");
+                }
+            }
+            case "3" -> {
+                Map<String, Object> roundInfo = lotteryMethods.getCurrentLotto649Round();
+                System.out.println("=== CURRENT LOTTO 6/49 ROUND INFO ===");
+                System.out.println("Tickets sold: " + roundInfo.get("ticketsSold"));
+                System.out.println("Last draw: " + roundInfo.get("lastDraw"));
+
+                if (roundInfo.containsKey("winningNumbers")) {
+                    System.out.println("Winning numbers: " + roundInfo.get("winningNumbers"));
+                }
+                if (roundInfo.containsKey("winners")) {
+                    List<String> winners = (List<String>) roundInfo.get("winners");
+                    if (winners.isEmpty()) {
+                        System.out.println("No winners in current round");
+                    } else {
+                        System.out.println("Winners:");
+                        for (String winner : winners) {
+                            System.out.println("  " + winner);
+                        }
+                    }
+                }
+            }
+            case "4" -> { return; }
+            default -> System.out.println("Invalid choice");
+        }
+    }
+
+    private boolean homeMenu() throws JsonProcessingException {
+        System.out.println("\n___UNLUCKY_HOME_MENU___");
+        System.out.println("Logged in as " + currentUser);
+        System.out.println("1) View Profile \n2) Add Currency \n3) Classic Lottery \n4) Lotto 649 \n5) Claim Winnings \n9) Logout \n0) Exit");
+        System.out.print("> ");
+        String choice = input.nextLine().trim();
+
+        switch (choice) {
+            case "1" -> userMethods.displayUserProfile(currentUser);
+            case "2" -> {
+                System.out.print("Enter amount of currency to add: ");
                 if (input.hasNextInt()) {
                     int amount = input.nextInt();
                     input.nextLine();
                     System.out.print("Enter Credit Card information: ");
-                    String creditCard = input.nextLine().trim();
+                    String creditCard = input.nextLine().trim(); // placeholder
                     userMethods.addCurrency(currentUser, amount);
-                    System.out.println("Successfully added " + amount + " currency to your account");
+                    System.out.println("Added " + amount + " currency to your account");
                 } else {
                     System.out.println("Invalid amount");
                     input.nextLine();
                 }
             }
-            case "3" -> {
-                System.out.println("Select game (not implemented)");
+            case "3" -> classicLotteryMenu();
+            case "4" -> lotto649Menu();
+            case "5" -> {
+                System.out.println("💰 Claiming Winnings...");
+                int winnings = lotteryMethods.claimWinnings(currentUser);
+                if (winnings > 0) {
+                    System.out.println("Successfully claimed " + winnings + " currency!");
+                } else {
+                    System.out.println("No winnings to claim at this time.");
+                }
             }
             case "9" -> {
-                System.out.println("Logged out.");
                 currentUser = null;
+                System.out.println("Logged out.");
             }
-            case "0" -> {
-                return false;
-            }
+            case "0" -> { return false; }
             default -> System.out.println("Invalid choice");
         }
         return true;
+    }
+
+    private void classicLotteryMenu() {
+        System.out.println("___CLASSIC_LOTTERY___");
+        System.out.println("1) Buy Tickets \n2) View My Tickets");
+        System.out.print("> ");
+        String choice = input.nextLine().trim();
+
+        switch (choice) {
+            case "1" -> {
+                System.out.print("How many tickets? (1 ticket = $2): ");
+                if (input.hasNextInt()) {
+                    int quantity = input.nextInt();
+                    input.nextLine();
+                    try {
+                        String ticketNumber = lotteryMethods.purchaseClassicTicket(currentUser, quantity);
+                        System.out.println("Purchased: " + ticketNumber);
+                    } catch (Exception e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("Invalid quantity");
+                    input.nextLine();
+                }
+            }
+            case "2" -> {
+                try {
+                    List<String> tickets = lotteryMethods.getUserClassicTickets(currentUser);
+                    if (tickets.isEmpty()) {
+                        System.out.println("No tickets purchased yet");
+                    } else {
+                        System.out.println("Your Classic Lottery Tickets:");
+                        for (int i = 0; i < tickets.size(); i++) {
+                            System.out.println((i + 1) + ") " + tickets.get(i));
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            default -> System.out.println("Invalid choice");
+        }
+    }
+
+    private void lotto649Menu() {
+        System.out.println("___LOTTO_6/49___");
+        System.out.println("1) Buy Ticket \n2) View My Tickets \n3) Quick Pick (Random Numbers)");
+        System.out.print("> ");
+        String choice = input.nextLine().trim();
+
+        switch (choice) {
+            case "1" -> {
+                System.out.println("Enter 6 unique numbers (1-49) separated by spaces:");
+                try {
+                    String numbersInput = input.nextLine().trim();
+                    List<Integer> numbers = new ArrayList<>();
+                    Scanner numberScanner = new Scanner(numbersInput);
+                    while (numberScanner.hasNextInt()) {
+                        int num = numberScanner.nextInt();
+                        if (num < 1 || num > 49) {
+                            System.out.println("Numbers must be between 1 and 49");
+                            numberScanner.close();
+                            return;
+                        }
+                        numbers.add(num);
+                    }
+                    numberScanner.close();
+
+                    if (numbers.size() != 6) {
+                        System.out.println("Please enter exactly 6 numbers");
+                        return;
+                    }
+
+                    if (new HashSet<>(numbers).size() != 6) {
+                        System.out.println("All numbers must be unique");
+                        return;
+                    }
+
+                    String ticketInfo = lotteryMethods.purchaseLotto649Ticket(currentUser, numbers);
+                    System.out.println("Purchased: " + ticketInfo);
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            case "2" -> {
+                try {
+                    List<String> tickets = lotteryMethods.getUserLotto649Tickets(currentUser);
+                    if (tickets.isEmpty()) {
+                        System.out.println("No tickets purchased yet");
+                    } else {
+                        System.out.println("Your Lotto 6/49 Tickets:");
+                        for (int i = 0; i < tickets.size(); i++) {
+                            System.out.println((i + 1) + ") " + tickets.get(i));
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            case "3" -> {
+                try {
+                    // Generate random numbers for quick pick
+                    List<Integer> randomNumbers = generateRandomNumbers();
+                    System.out.println("Your quick pick numbers: " + randomNumbers);
+
+                    String ticketInfo = lotteryMethods.purchaseLotto649Ticket(currentUser, randomNumbers);
+                    System.out.println("Purchased: " + ticketInfo);
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            default -> System.out.println("Invalid choice");
+        }
+    }
+
+    // Helper method for quick pick
+    private List<Integer> generateRandomNumbers() {
+        Set<Integer> numbers = new HashSet<>();
+        Random random = new Random();
+        while (numbers.size() < 6) {
+            numbers.add(random.nextInt(49) + 1);
+        }
+        return new ArrayList<>(numbers).stream().sorted().toList();
     }
 
     public static void main(String[] args) {
