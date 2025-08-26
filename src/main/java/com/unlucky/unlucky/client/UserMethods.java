@@ -1,47 +1,136 @@
 package com.unlucky.unlucky.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unlucky.unlucky.logging.LoggingService;
+import com.unlucky.unlucky.server.user.UserService;
 import com.unlucky.unlucky.server.user.User;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import java.util.Optional;
 
 public class UserMethods {
 
-    private final LoggingService loggingService = new LoggingService();
-    private final Connection connection = new Connection("http://localhost:8080");
-    private final ObjectMapper mapper = new ObjectMapper();
+    private UserService userService;
+    private static ApplicationContext context;
 
     public UserMethods() {
-
+        initializeServices();
     }
 
-    public String returnUserByName(String username) throws JsonProcessingException {
-        return mapper.readValue(connection.sendGetRequest("/api/users/" +  username + "/username"), String.class);
+    private synchronized void initializeServices() {
+        if (context == null) {
+            try {
+                context = new AnnotationConfigApplicationContext("com.unlucky.unlucky");
+            } catch (Exception e) {
+                System.err.println("Failed to initialize Spring context: " + e.getMessage());
+                return;
+            }
+        }
+
+        try {
+            this.userService = context.getBean(UserService.class);
+        } catch (Exception e) {
+            System.err.println("Failed to get UserService: " + e.getMessage());
+        }
     }
 
-    public void registerUser(String username, String email){
-        long start = System.nanoTime();
-        String json = String.format("{\"username\":\"%s\", \"email\":\"%s\"}", username, email);
-        connection.sendPostRequest(json, "/api/users/register");
-        long end = System.nanoTime();
-        double elapsed = (double) (end - start) / 1000000;
-        loggingService.log(LoggingService.ACTION.REGISTER_USER, elapsed);
+    public String returnUserByName(String username) {
+        if (userService == null) {
+            initializeServices();
+            if (userService == null) {
+                return username; // Fallback
+            }
+        }
+
+        try {
+            return userService.getUserByUsername(username).orElse(null);
+        } catch (Exception e) {
+            System.err.println("Error getting user by name: " + e.getMessage());
+            return null;
+        }
     }
 
-    public void displayUserProfile(String username) throws JsonProcessingException {
-        User user = mapper.readValue(connection.sendGetRequest("/api/users/" + username + "/profile"), User.class);
-        System.out.println("Username: " + user.getUsername());
-        System.out.println("Email: " + user.getEmail());
-        System.out.println("Balance: " + user.getBalance());
-    }
+    public void registerUser(String username, String email) {
+        if (userService == null) {
+            initializeServices();
+            if (userService == null) {
+                throw new RuntimeException("UserService not available. Cannot register user.");
+            }
+        }
 
-    public void addCurrency(String username, int amount) {
-        connection.sendPostRequest("{}", "/api/users/" + username + "/add-currency?amount=" + amount);
+        try {
+            userService.createUser(username, email);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to register user: " + e.getMessage());
+        }
     }
 
     public boolean isValidEmail(String email) {
-        if(email == null) return false;
-        String regex = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
-        return email.matches(regex);
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+    }
+
+    public void displayUserProfile(String username) {
+        if (userService == null) {
+            initializeServices();
+            if (userService == null) {
+                System.out.println("UserService not available. Cannot display profile.");
+                return;
+            }
+        }
+
+        try {
+            Optional<User> user = userService.getProfileByName(username);
+            if (user.isPresent()) {
+                User u = user.get();
+                System.out.println("Username: " + u.getUsername() +
+                        ", Email: " + u.getEmail() +
+                        ", Balance: " + u.getBalance());
+            } else {
+                System.out.println("User not found");
+            }
+        } catch (Exception e) {
+            System.out.println("Error displaying profile: " + e.getMessage());
+        }
+    }
+
+    public void addCurrency(String username, int amount) {
+        if (userService == null) {
+            initializeServices();
+            if (userService == null) {
+                throw new RuntimeException("UserService not available. Cannot add currency.");
+            }
+        }
+
+        try {
+            userService.addCurrency(username, amount);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to add currency: " + e.getMessage());
+        }
+    }
+
+    public int getBalance(String username) {
+        if (userService == null) {
+            initializeServices();
+            if (userService == null) {
+                return 100; // Fallback balance
+            }
+        }
+
+        try {
+            Optional<User> user = userService.getProfileByName(username);
+            return user.map(User::getBalance).orElse(0);
+        } catch (Exception e) {
+            System.err.println("Error getting balance: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public static ApplicationContext getContext() {
+        if (context == null) {
+            try {
+                context = new AnnotationConfigApplicationContext("com.unlucky.unlucky");
+            } catch (Exception e) {
+                System.err.println("Failed to initialize Spring context: " + e.getMessage());
+            }
+        }
+        return context;
     }
 }
