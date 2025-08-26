@@ -1,5 +1,6 @@
 package com.unlucky.unlucky.client;
 
+import com.unlucky.unlucky.logging.LoggingService;
 import com.unlucky.unlucky.server.user.UserService;
 import com.unlucky.unlucky.server.user.User;
 import org.springframework.context.ApplicationContext;
@@ -9,6 +10,7 @@ import java.util.Optional;
 public class UserMethods {
 
     private UserService userService;
+    private LoggingService loggingService;
     private static ApplicationContext context;
 
     public UserMethods() {
@@ -27,6 +29,7 @@ public class UserMethods {
 
         try {
             this.userService = context.getBean(UserService.class);
+            this.loggingService = context.getBean(LoggingService.class);
         } catch (Exception e) {
             System.err.println("Failed to get UserService: " + e.getMessage());
         }
@@ -57,7 +60,13 @@ public class UserMethods {
         }
 
         try {
+            long start = System.nanoTime();
+
             userService.createUser(username, email);
+
+            long end = System.nanoTime();
+            double elapsed = (double) (end - start) / 1000000;
+            loggingService.log(LoggingService.ACTION.REGISTER_USER, elapsed);
         } catch (Exception e) {
             throw new RuntimeException("Failed to register user: " + e.getMessage());
         }
