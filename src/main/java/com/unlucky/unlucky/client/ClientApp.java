@@ -1,6 +1,7 @@
 package com.unlucky.unlucky.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import java.util.*;
 
 public class ClientApp {
@@ -98,7 +99,7 @@ public class ClientApp {
         return true;
     }
 
-    private boolean adminMenu() throws JsonProcessingException {
+    private boolean adminMenu() throws IOException {
         System.out.println("___ADMIN___");
         System.out.println("1) View a user profile \n2) View all users \n3) Draw Classic Lottery \n4) Lotto 649 Management \n9) Logout \n0) Quit");
         System.out.print("> ");
@@ -121,7 +122,9 @@ public class ClientApp {
                 lotteryMethods.drawClassicLottery();
                 // The draw method now handles all output including winner announcement
             }
+
             case "4" -> lotto649AdminMenu();
+
             case "9" -> {
                 System.out.println("Logged out.");
                 currentUser = null;
