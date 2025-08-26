@@ -28,7 +28,7 @@ public class LotteryService {
     }
 
     @Transactional
-    public ClassicLotteryTicket purchaseClassicTicket(String username, int quantity) {
+    public List<ClassicLotteryTicket> purchaseClassicTicket(String username, int quantity) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -40,20 +40,24 @@ public class LotteryService {
         user.setBalance(user.getBalance() - cost);
         userRepository.save(user);
 
-        ClassicLotteryTicket ticket = new ClassicLotteryTicket();
-        ticket.setUser(user);
-        ticket.setTicketNumber(generateTicketNumber());
-        ticket.setPurchaseDate(LocalDateTime.now());
-        ticket.setWinner(false);
+        List<ClassicLotteryTicket> tickets = new ArrayList<>();
+        for (int i = 0; i < quantity; i++) {
+            ClassicLotteryTicket ticket = new ClassicLotteryTicket();
+            ticket.setUser(user);
+            ticket.setTicketNumber(generateTicketNumber());
+            ticket.setPurchaseDate(LocalDateTime.now());
+            ticket.setWinner(false);
+            tickets.add(classicLotteryRepository.save(ticket));
+        }
 
-        return classicLotteryRepository.save(ticket);
+        return tickets;
     }
 
     @Transactional
-    public void drawClassicLottery() {
+    public Map<String, Object> drawClassicLottery() {
         List<ClassicLotteryTicket> allTickets = classicLotteryRepository.findAll();
         if (allTickets.isEmpty()) {
-            return;
+            throw new RuntimeException("No tickets to draw");
         }
 
         ClassicLotteryTicket winner = allTickets.get(random.nextInt(allTickets.size()));
@@ -64,6 +68,16 @@ public class LotteryService {
         int prize = (int) (allTickets.size() * 1.5);
         winningUser.setBalance(winningUser.getBalance() + prize);
         userRepository.save(winningUser);
+
+        classicLotteryRepository.deleteAll();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("winner", winningUser.getUsername());
+        result.put("ticketNumber", winner.getTicketNumber());
+        result.put("prize", prize);
+        result.put("totalTickets", allTickets.size());
+
+        return result;
     }
 
     public List<ClassicLotteryTicket> getUserClassicTickets(String username) {
@@ -111,7 +125,7 @@ public class LotteryService {
 
         Map<String, Object> roundResult = new HashMap<>();
         roundResult.put("winningNumbers", winningNumbers);
-        List<String> winners = new ArrayList<>();
+        List<Map<String, Object>> winners = new ArrayList<>();
 
         for (Lotto649Ticket ticket : allTickets) {
             int matches = (int) ticket.getNumbers().stream()
@@ -131,12 +145,21 @@ public class LotteryService {
                 User user = ticket.getUser();
                 user.setBalance(user.getBalance() + prize);
                 userRepository.save(user);
-                winners.add(user.getUsername() + " matched " + matches + " (" + prize + ")");
+
+                Map<String, Object> winnerInfo = new HashMap<>();
+                winnerInfo.put("username", user.getUsername());
+                winnerInfo.put("matches", matches);
+                winnerInfo.put("prize", prize);
+                winnerInfo.put("numbers", ticket.getNumbers());
+                winners.add(winnerInfo);
             }
         }
 
         lotto649Repository.saveAll(allTickets);
         roundResult.put("winners", winners);
+
+        lotto649Repository.deleteAll();
+
         return roundResult;
     }
 

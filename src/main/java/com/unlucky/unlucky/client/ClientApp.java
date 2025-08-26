@@ -115,12 +115,11 @@ public class ClientApp {
             }
             case "2" -> {
                 System.out.println("View all users functionality would be implemented here");
-                // In a real implementation, this would list all users
             }
             case "3" -> {
                 System.out.println("🎰 Drawing Classic Lottery...");
                 lotteryMethods.drawClassicLottery();
-                // The draw method now handles all output including winner announcement
+                // The draw method handles all output including winner announcement
             }
 
             case "4" -> lotto649AdminMenu();
@@ -143,7 +142,7 @@ public class ClientApp {
 
         switch (choice) {
             case "1" -> {
-                System.out.println("Drawing Lotto 6/49...");
+                System.out.println("🎰 Drawing Lotto 6/49...");
                 lotteryMethods.drawLotto649();
             }
             case "2" -> {
@@ -156,24 +155,13 @@ public class ClientApp {
                 }
             }
             case "3" -> {
-                Map<String, Object> roundInfo = lotteryMethods.getCurrentLotto649Round();
-                System.out.println("=== CURRENT LOTTO 6/49 ROUND INFO ===");
-                System.out.println("Tickets sold: " + roundInfo.get("ticketsSold"));
-                System.out.println("Last draw: " + roundInfo.get("lastDraw"));
-
-                if (roundInfo.containsKey("winningNumbers")) {
-                    System.out.println("Winning numbers: " + roundInfo.get("winningNumbers"));
-                }
-                if (roundInfo.containsKey("winners")) {
-                    List<String> winners = (List<String>) roundInfo.get("winners");
-                    if (winners.isEmpty()) {
-                        System.out.println("No winners in current round");
-                    } else {
-                        System.out.println("Winners:");
-                        for (String winner : winners) {
-                            System.out.println("  " + winner);
-                        }
-                    }
+                try {
+                    Map<String, Object> roundInfo = lotteryMethods.getCurrentLotto649Round();
+                    System.out.println("=== CURRENT LOTTO 6/49 ROUND INFO ===");
+                    System.out.println("Tickets sold: " + roundInfo.get("ticketsSold"));
+                    System.out.println("Last draw: " + roundInfo.get("lastDraw"));
+                } catch (Exception e) {
+                    System.out.println("Error getting round info: " + e.getMessage());
                 }
             }
             case "4" -> { return; }
@@ -208,11 +196,15 @@ public class ClientApp {
             case "4" -> lotto649Menu();
             case "5" -> {
                 System.out.println("💰 Claiming Winnings...");
-                int winnings = lotteryMethods.claimWinnings(currentUser);
-                if (winnings > 0) {
-                    System.out.println("Successfully claimed " + winnings + " currency!");
-                } else {
-                    System.out.println("No winnings to claim at this time.");
+                try {
+                    int winnings = lotteryMethods.claimWinnings(currentUser);
+                    if (winnings > 0) {
+                        System.out.println("Successfully claimed " + winnings + " currency!");
+                    } else {
+                        System.out.println("No winnings to claim at this time.");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error claiming winnings: " + e.getMessage());
                 }
             }
             case "9" -> {
@@ -238,8 +230,8 @@ public class ClientApp {
                     int quantity = input.nextInt();
                     input.nextLine();
                     try {
-                        String ticketNumber = lotteryMethods.purchaseClassicTicket(currentUser, quantity);
-                        System.out.println("Purchased: " + ticketNumber);
+                        String result = lotteryMethods.purchaseClassicTicket(currentUser, quantity);
+                        System.out.println(result);
                     } catch (Exception e) {
                         System.out.println("Error: " + e.getMessage());
                     }
@@ -301,8 +293,8 @@ public class ClientApp {
                         return;
                     }
 
-                    String ticketInfo = lotteryMethods.purchaseLotto649Ticket(currentUser, numbers);
-                    System.out.println("Purchased: " + ticketInfo);
+                    String result = lotteryMethods.purchaseLotto649Ticket(currentUser, numbers);
+                    System.out.println(result);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                 }
@@ -325,27 +317,17 @@ public class ClientApp {
             case "3" -> {
                 try {
                     // Generate random numbers for quick pick
-                    List<Integer> randomNumbers = generateRandomNumbers();
+                    List<Integer> randomNumbers = lotteryMethods.generateRandomNumbers();
                     System.out.println("Your quick pick numbers: " + randomNumbers);
 
-                    String ticketInfo = lotteryMethods.purchaseLotto649Ticket(currentUser, randomNumbers);
-                    System.out.println("Purchased: " + ticketInfo);
+                    String result = lotteryMethods.purchaseLotto649Ticket(currentUser, randomNumbers);
+                    System.out.println(result);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                 }
             }
             default -> System.out.println("Invalid choice");
         }
-    }
-
-    // Helper method for quick pick
-    private List<Integer> generateRandomNumbers() {
-        Set<Integer> numbers = new HashSet<>();
-        Random random = new Random();
-        while (numbers.size() < 6) {
-            numbers.add(random.nextInt(49) + 1);
-        }
-        return new ArrayList<>(numbers).stream().sorted().toList();
     }
 
     public static void main(String[] args) {
