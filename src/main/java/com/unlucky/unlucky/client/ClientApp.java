@@ -32,7 +32,7 @@ public class ClientApp {
     }
 
     private boolean loginScreen() throws JsonProcessingException {
-        System.out.println("\n1) Login 2) Register 0) Exit");
+        System.out.println("1) Login \n2) Register \n0) Exit");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -100,7 +100,7 @@ public class ClientApp {
 
     private boolean adminMenu() throws JsonProcessingException {
         System.out.println("___ADMIN___");
-        System.out.println("1) View a user profile 2) View all users 3) Draw Classic Lottery 4) Lotto 649 Management 9) Logout 0) Quit");
+        System.out.println("1) View a user profile \n2) View all users \n3) Draw Classic Lottery \n4) Lotto 649 Management \n9) Logout \n0) Quit");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -134,7 +134,7 @@ public class ClientApp {
 
     private void lotto649AdminMenu() {
         System.out.println("___LOTTO_649_ADMIN___");
-        System.out.println("1) Draw Lotto 649 2) Start New Round 3) View Round Info 4) Back");
+        System.out.println("1) Draw Lotto 649 \n2) Start New Round \n3) View Round Info \n4) Back");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -181,7 +181,7 @@ public class ClientApp {
     private boolean homeMenu() throws JsonProcessingException {
         System.out.println("\n___UNLUCKY_HOME_MENU___");
         System.out.println("Logged in as " + currentUser);
-        System.out.println("1) View Profile 2) Add Currency 3) Classic Lottery 4) Lotto 649 5) Claim Winnings 9) Logout 0) Exit");
+        System.out.println("1) View Profile \n2) Add Currency \n3) Classic Lottery \n4) Lotto 649 \n5) Claim Winnings \n9) Logout \n0) Exit");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -224,7 +224,7 @@ public class ClientApp {
 
     private void classicLotteryMenu() {
         System.out.println("___CLASSIC_LOTTERY___");
-        System.out.println("1) Buy Tickets 2) View My Tickets");
+        System.out.println("1) Buy Tickets \n2) View My Tickets");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -266,7 +266,7 @@ public class ClientApp {
 
     private void lotto649Menu() {
         System.out.println("___LOTTO_6/49___");
-        System.out.println("1) Buy Ticket 2) View My Tickets 3) Quick Pick (Random Numbers)");
+        System.out.println("1) Buy Ticket \n2) View My Tickets \n3) Quick Pick (Random Numbers)");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
