@@ -1,20 +1,23 @@
 package com.unlucky.unlucky.client;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 public class Connection {
     private final String ip;
+    private Socket clientSocket;
+    private PrintWriter out;
+    private BufferedReader in;
 
     public Connection(String ip) {
         this.ip = ip;
     }
 
-    public String sendGetRequest(String request) {
+    public String restGetRequest(String request) {
         try {
             URL url = new URL(ip + request);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -38,7 +41,7 @@ public class Connection {
         }
     }
 
-    public String sendPostRequest(String jsonInput, String request) {
+    public String restPostRequest(String jsonInput, String request) {
         try {
             URL url = new URL(ip + request);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -64,6 +67,31 @@ public class Connection {
         } catch (Exception e) {
             e.printStackTrace();
             return "Error: " + e.getMessage();
+        }
+    }
+
+    public void startConnection(String ip, int port){
+        try {
+            clientSocket = new Socket(ip, port);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void stopConnection() throws IOException {
+        in.close();
+        out.close();
+        clientSocket.close();
+    }
+
+    public String sendMessage(String message){
+        try {
+            out.println(message);
+            return in.readLine();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

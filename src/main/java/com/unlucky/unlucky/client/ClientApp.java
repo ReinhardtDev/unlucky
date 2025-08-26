@@ -1,6 +1,8 @@
 package com.unlucky.unlucky.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.io.IOException;
 import java.util.Scanner;
 
 public class ClientApp {
@@ -106,7 +108,7 @@ public class ClientApp {
         return true;
     }
 
-    private boolean adminMenu() throws JsonProcessingException {
+    private boolean adminMenu() throws IOException {
         System.out.println("___ADMIN___");
         System.out.println("1) View a user profile 2) View all users 9) Logout 0) Quit");
         System.out.print("> ");
@@ -123,6 +125,9 @@ public class ClientApp {
             }
             case "2" -> {
                 System.out.println("View all users (not implemented)");
+            }
+            case "3" -> {
+                userMethods.testTCPConnection();
             }
             case "9" -> {
                 System.out.println("Logged out.");
