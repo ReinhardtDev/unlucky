@@ -1,5 +1,6 @@
 package com.unlucky.unlucky.client;
 
+import com.unlucky.unlucky.logging.LoggingService;
 import com.unlucky.unlucky.server.games.service.LotteryService;
 import org.springframework.context.ApplicationContext;
 import java.util.*;
@@ -8,6 +9,7 @@ public class LotteryMethods {
 
     private final UserMethods userMethods;
     private LotteryService lotteryService;
+    private LoggingService loggingService;
 
     private final Map<String, List<ClassicTicket>> classicTickets = new HashMap<>();
     private final Map<String, List<Lotto649Ticket>> lotto649Tickets = new HashMap<>();
@@ -22,6 +24,7 @@ public class LotteryMethods {
         try {
             ApplicationContext context = UserMethods.getContext();
             if (context != null) {
+                this.loggingService = context.getBean(LoggingService.class);
                 this.lotteryService = context.getBean(LotteryService.class);
             }
         } catch (Exception e) {
@@ -31,6 +34,8 @@ public class LotteryMethods {
 
     public String purchaseClassicTicket(String username, int quantity) {
         try {
+            long start = System.nanoTime();
+
             int cost = quantity * 2;
             int currentBalance = userMethods.getBalance(username);
 
@@ -43,6 +48,11 @@ public class LotteryMethods {
                     lotteryService.purchaseClassicTicket(username, 1);
                 }
                 userMethods.addCurrency(username, -cost);
+
+                long end = System.nanoTime();
+                double elapsed = (double) (end - start) / 1000000;
+                loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_CLASSIC, elapsed, username, String.valueOf(quantity));
+
                 return "Purchased " + quantity + " classic lottery tickets for " + cost + " currency";
             } else {
                 userMethods.addCurrency(username, -cost);
@@ -52,8 +62,12 @@ public class LotteryMethods {
                     String ticketNumber = generateTicketNumber();
                     userTickets.add(new ClassicTicket(ticketNumber, false));
                 }
-
                 classicTickets.put(username, userTickets);
+
+                long end = System.nanoTime();
+                double elapsed = (double) (end - start) / 1000000;
+                loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_CLASSIC, elapsed, username, String.valueOf(quantity));
+
                 return "Purchased " + quantity + " classic lottery tickets for " + cost + " currency (in-memory)";
             }
 
