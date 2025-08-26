@@ -3,10 +3,13 @@ package com.unlucky.unlucky.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.unlucky.unlucky.logging.LoggingService;
+
 import java.util.*;
 
 public class LotteryMethods {
 
+    private final LoggingService loggingService = new LoggingService();
     private final Connection connection = new Connection("http://localhost:8080");
     private final ObjectMapper mapper = new ObjectMapper();
     private final Random random = new Random();
@@ -16,6 +19,8 @@ public class LotteryMethods {
 
     public String purchaseClassicTicket(String username, int quantity) {
         try {
+            long start = System.nanoTime();
+
             String requestBody = "{\"quantity\":" + quantity + "}";
             String response = connection.restPostRequest(
                     requestBody,
@@ -23,6 +28,10 @@ public class LotteryMethods {
             );
 
             List<Map<String, Object>> ticketsData = mapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
+
+            long end = System.nanoTime();
+            double elapsed = (double) (end - start) / 1000000;
+            loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_CLASSIC, elapsed, username, String.valueOf(quantity));
 
             return "Purchased " + ticketsData.size() + " classic lottery tickets";
         } catch (Exception e) {
@@ -32,11 +41,21 @@ public class LotteryMethods {
 
     public String purchaseLotto649Ticket(String username, List<Integer> numbers) {
         try {
+            long start = System.nanoTime();
             String numbersJson = mapper.writeValueAsString(numbers);
             String response = connection.restPostRequest(
                     numbersJson,
                     "/api/lottery/lotto649/purchase?username=" + username
             );
+
+            long end = System.nanoTime();
+            double elapsed = (double) (end - start) / 1000000;
+            StringBuilder numberString = new StringBuilder();
+            for (Integer number : numbers) {
+                numberString.append(number).append(", ");
+            }
+            loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_649, elapsed, username, numberString.toString());
+
             return "Purchased Lotto 6/49 ticket with numbers: " + numbers;
         } catch (Exception e) {
             throw new RuntimeException("Failed to purchase ticket: " + e.getMessage());
@@ -98,6 +117,8 @@ public class LotteryMethods {
 
     public void drawClassicLottery() {
         try {
+            long start = System.nanoTime();
+
             String response = connection.restPostRequest("{}", "/api/lottery/classic/draw");
             Map<String, Object> result = mapper.readValue(response, Map.class);
 
@@ -107,6 +128,10 @@ public class LotteryMethods {
             System.out.println("Prize: " + result.get("prize") + " currency");
             System.out.println("Total tickets: " + result.get("totalTickets"));
 
+            long end = System.nanoTime();
+            double elapsed = (double) (end - start) / 1000000;
+            loggingService.log(LoggingService.ACTION.DRAW_CLASSIC, elapsed);
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to draw classic lottery: " + e.getMessage());
         }
@@ -114,6 +139,8 @@ public class LotteryMethods {
 
     public Map<String, Object> drawLotto649() {
         try {
+            long start = System.nanoTime();
+
             String response = connection.restPostRequest("{}", "/api/lottery/lotto649/draw");
             Map<String, Object> result = mapper.readValue(response, Map.class);
 
@@ -131,6 +158,9 @@ public class LotteryMethods {
                             " - Prize: " + winner.get("prize"));
                 }
             }
+            long end = System.nanoTime();
+            double elapsed = (double) (end - start) / 1000000;
+            loggingService.log(LoggingService.ACTION.DRAW_649, elapsed);
 
             return result;
         } catch (Exception e) {
