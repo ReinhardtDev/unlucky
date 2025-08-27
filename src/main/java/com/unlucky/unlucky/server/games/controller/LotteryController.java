@@ -34,6 +34,11 @@ public class LotteryController {
         return lotteryService.getUserClassicTickets(username);
     }
 
+    @GetMapping("/classic/tickets/history")
+    public List<ClassicLotteryTicket> getClassicTicketHistory(@RequestParam String username) {
+        return lotteryService.getUserClassicTicketHistory(username);
+    }
+
     @PostMapping("/lotto649/purchase")
     public Lotto649Ticket purchaseLotto649Ticket(
             @RequestParam String username,
@@ -49,6 +54,11 @@ public class LotteryController {
     @GetMapping("/lotto649/tickets")
     public List<Lotto649Ticket> getLotto649Tickets(@RequestParam String username) {
         return lotteryService.getUserLotto649Tickets(username);
+    }
+
+    @GetMapping("/lotto649/tickets/history")
+    public List<Lotto649Ticket> getLotto649TicketHistory(@RequestParam String username) {
+        return lotteryService.getUserLotto649TicketHistory(username);
     }
 
     @PostMapping("/lotto649/claim")

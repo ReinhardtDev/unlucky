@@ -227,7 +227,7 @@ public class ClientApp {
 
     private void classicLotteryMenu() {
         System.out.println("___CLASSIC_LOTTERY___");
-        System.out.println("1) Buy Tickets \n2) View My Tickets");
+        System.out.println("1) Buy Tickets \n2) View My Active Tickets \n3) View Ticket History");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -263,13 +263,28 @@ public class ClientApp {
                     System.out.println("Error: " + e.getMessage());
                 }
             }
+            case "3" -> {
+                try {
+                    List<String> tickets = lotteryMethods.getUserClassicTicketHistory(currentUser);
+                    if (tickets.isEmpty()) {
+                        System.out.println("No ticket history yet");
+                    } else {
+                        System.out.println("Your Classic Lottery Ticket History:");
+                        for (int i = 0; i < tickets.size(); i++) {
+                            System.out.println((i + 1) + ") " + tickets.get(i));
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
             default -> System.out.println("Invalid choice");
         }
     }
 
     private void lotto649Menu() {
         System.out.println("___LOTTO_6/49___");
-        System.out.println("1) Buy Ticket \n2) View My Tickets \n3) Quick Pick (Random Numbers)");
+        System.out.println("1) Buy Ticket \n2) View My Tickets \n3) Quick Pick (Random Numbers) \n4) View My Ticket History");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -330,6 +345,21 @@ public class ClientApp {
 
                     String result = lotteryMethods.purchaseLotto649Ticket(currentUser, randomNumbers.toString());
                     System.out.println(result);
+                } catch (Exception e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+            case "4" -> {
+                try {
+                    List<String> tickets = lotteryMethods.getUserLotto649TicketHistory(currentUser);
+                    if (tickets.isEmpty()) {
+                        System.out.println("No ticket history yet");
+                    } else {
+                        System.out.println("Your Classic Lottery Ticket History:");
+                        for (int i = 0; i < tickets.size(); i++) {
+                            System.out.println((i + 1) + ") " + tickets.get(i));
+                        }
+                    }
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
                 }
