@@ -36,7 +36,7 @@ public class PerformanceClient {
         while (!executorService.isTerminated()) {}
         long end = System.nanoTime();
         //Divide by 1 mil for ms, then divide by 2000 for average -> divide by 2 bil
-        //Multiply by 20 to simulate realistic speedup by multi-threading
+        //Multiply by 20 to simulate idealistic speedup from multi-threading
         double elapsed = (double) (end - start) / 1000000;
         double averageElapsed = (double) (end - start) / 2000000000 * threads;
         loggingService.log(LoggingService.ACTION.TOTAL_TIME, elapsed);
