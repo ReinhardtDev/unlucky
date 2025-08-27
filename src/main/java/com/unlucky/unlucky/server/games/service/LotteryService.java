@@ -99,6 +99,19 @@ public class LotteryService {
         return classicLotteryRepository.findByUserId(user.getId());
     }
 
+    public List<ClassicLotteryTicket> getUserClassicTicketHistory(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<ClassicLotteryTicket> tickets = classicLotteryRepository.findByUserId(user.getId());
+        List<ClassicLotteryTicket> filteredTickets = new ArrayList<>();
+        for (ClassicLotteryTicket ticket : tickets) {
+            if (!ticket.isActive()) {
+                filteredTickets.add(ticket);
+            }
+        }
+        return filteredTickets;
+    }
+
     @Transactional
     public Lotto649Ticket purchaseLotto649Ticket(String username, List<Integer> numbers) {
         if (numbers.size() != 6 || new HashSet<>(numbers).size() != 6) {
@@ -195,6 +208,19 @@ public class LotteryService {
         return lotto649Repository.findByUserId(user.getId());
     }
 
+    public List<Lotto649Ticket> getUserLotto649TicketHistory(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<Lotto649Ticket> tickets = lotto649Repository.findByUserId(user.getId());
+        List<Lotto649Ticket> filteredTickets = new ArrayList<>();
+        for (Lotto649Ticket ticket : tickets) {
+            if (!ticket.isActive()) {
+                filteredTickets.add(ticket);
+            }
+        }
+        return filteredTickets;
+    }
+
     public Map<String, Object> getCurrentLotto649Round() {
         Map<String, Object> roundInfo = new HashMap<>();
         roundInfo.put("ticketsSold", lotto649Repository.count());
@@ -241,7 +267,12 @@ public class LotteryService {
 
     @Transactional
     public void startNewLotto649Round() {
-        lotto649Repository.deleteAll();
+        List<Lotto649Ticket> allTickets = lotto649Repository.findAll();
+        for (Lotto649Ticket ticket : allTickets) {
+            if (!ticket.isTest()) {
+                ticket.setActive(false);
+            }
+        }
     }
 
     private String generateTicketNumber() {

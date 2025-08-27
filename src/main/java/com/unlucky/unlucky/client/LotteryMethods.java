@@ -75,9 +75,62 @@ public class LotteryMethods {
         }
     }
 
+    public List<String> getUserClassicTicketHistory(String username) {
+        try {
+            String response = connection.restGetRequest("/api/lottery/classic/tickets/history?username=" + username);
+
+            List<Map<String, Object>> ticketsData = mapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
+
+            List<String> ticketStrings = new ArrayList<>();
+            for (Map<String, Object> ticketData : ticketsData) {
+                String ticketNumber = (String) ticketData.get("ticketNumber");
+                Boolean isWinner = (Boolean) ticketData.get("winner");
+                String purchaseDate = (String) ticketData.get("purchaseDate");
+
+                String ticketString = "Ticket #" + ticketNumber +
+                        " - Purchased: " + purchaseDate +
+                        (isWinner != null && isWinner ? " - WINNER!" : "");
+                ticketStrings.add(ticketString);
+            }
+
+            return ticketStrings;
+
+        } catch (Exception e) {
+            return List.of("No history available or server error: " + e.getMessage());
+        }
+    }
+
+
     public List<String> getUserLotto649Tickets(String username) {
         try {
             String response = connection.restGetRequest("/api/lottery/lotto649/tickets?username=" + username);
+
+            List<Map<String, Object>> ticketsData = mapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
+
+            List<String> ticketStrings = new ArrayList<>();
+            for (Map<String, Object> ticketData : ticketsData) {
+                List<Integer> numbers = (List<Integer>) ticketData.get("numbers");
+                Integer matchingNumbers = (Integer) ticketData.get("matchingNumbers");
+                Boolean isWinner = (Boolean) ticketData.get("winner");
+                String purchaseDate = (String) ticketData.get("purchaseDate");
+
+                String ticketString = "Numbers: " + numbers +
+                        " - Matches: " + (matchingNumbers != null ? matchingNumbers : "0") +
+                        " - Purchased: " + purchaseDate +
+                        (isWinner != null && isWinner ? " - WINNER!" : "");
+                ticketStrings.add(ticketString);
+            }
+
+            return ticketStrings;
+
+        } catch (Exception e) {
+            return List.of("No tickets available or server error: " + e.getMessage());
+        }
+    }
+
+    public List<String> getUserLotto649TicketHistory(String username) {
+        try {
+            String response = connection.restGetRequest("/api/lottery/lotto649/tickets/history?username=" + username);
 
             List<Map<String, Object>> ticketsData = mapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
 
