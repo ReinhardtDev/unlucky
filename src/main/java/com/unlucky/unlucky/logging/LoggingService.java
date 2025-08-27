@@ -75,7 +75,7 @@ public class LoggingService {
     public void logStage(String stage, boolean nextStage) {
         try(PrintWriter writer = new PrintWriter(new FileWriter(logFile, true))) {
             String timeStamp = LocalDateTime.now().format(formatter);
-            writer.println("[-------------------------------" + timeStamp + "-------------------------------]");
+            writer.println("----------------------------------------------------------------------------------------");
             writer.println("[" + timeStamp + "] " + stage);
             if (nextStage) {
                 writer.println("Starting next stage...");
