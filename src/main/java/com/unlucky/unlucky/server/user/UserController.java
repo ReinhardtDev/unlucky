@@ -2,7 +2,6 @@ package com.unlucky.unlucky.server.user;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Currency;
 import java.util.Optional;
 
 @RestController

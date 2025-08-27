@@ -51,4 +51,8 @@ public class UserMethods {
             return null;
         }
     }
+
+    public void showTicketHistory(String username) {
+
+    }
 }

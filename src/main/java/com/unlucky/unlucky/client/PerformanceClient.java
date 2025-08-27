@@ -20,7 +20,10 @@ public class PerformanceClient {
     public PerformanceClient() {
     }
 
-    public void startClient() {
+    public void startClient(String ip, int port) {
+        tcpConnection.startConnection(ip, port);
+        lotteryMethods.purchaseClassicTicket("test", 100);
+        lotteryMethods.purchaseLotto649Ticket("test", "1 2 3 4 5 6");
         int threads = 10;
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
 
@@ -68,6 +71,7 @@ public class PerformanceClient {
             //Choose a random lottery, then buy a ticket
             int randomLottery = rand.nextInt(2);
             if (randomLottery == 0) {
+                lotteryMethods.purchaseClassicTicket(randomUser.getUsername(), 5);
                 executorService.submit(() -> lotteryMethods.purchaseClassicTicket(randomUser.getUsername(), 1));
             } else {
                 List<Integer> numbers = new ArrayList<>();
@@ -116,6 +120,6 @@ public class PerformanceClient {
 
 
     public static void main(String[] args) {
-        new PerformanceClient().startClient();
+        new PerformanceClient().startClient("localhost", 5000);
     }
 }
