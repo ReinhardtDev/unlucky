@@ -12,7 +12,8 @@ import java.util.concurrent.Executors;
 
 public class PerformanceClient {
 
-    private final LotteryMethods lotteryMethods = new LotteryMethods();
+    private final TCPConnection tcpConnection = new TCPConnection();
+    private final LotteryMethods lotteryMethods = new LotteryMethods(tcpConnection);
     private final LoggingService loggingService = new LoggingService();
     private final UserMethods userMethods = new UserMethods();;
 
@@ -76,7 +77,7 @@ public class PerformanceClient {
                 numbers.add(20);
                 numbers.add(35);
                 numbers.add(47);
-                executorService.submit(() -> lotteryMethods.purchaseLotto649Ticket(randomUser.getUsername(), numbers));
+                executorService.submit(() -> lotteryMethods.purchaseLotto649Ticket(randomUser.getUsername(), numbers.toString()));
             }
         }
 

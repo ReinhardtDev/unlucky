@@ -5,13 +5,17 @@ import java.io.IOException;
 import java.util.*;
 
 public class ClientApp {
-
     private final UserMethods userMethods = new UserMethods();
-    private final LotteryMethods lotteryMethods = new LotteryMethods();
     private final Scanner input = new Scanner(System.in);
     private String currentUser = null;
+    private final TCPConnection tcpConnection = new TCPConnection();
+    private final LotteryMethods lotteryMethods = new LotteryMethods(tcpConnection);
 
-    public void startClient() {
+
+    public void startClient(String ip, int port) {
+        if(!tcpConnection.startConnection(ip, port)) {
+            return;
+        }
         System.out.println("___WELCOME_TO_UNLUCKY___");
 
         boolean running = true;
@@ -29,6 +33,7 @@ public class ClientApp {
             }
         }
 
+        tcpConnection.stopConnection();
         System.out.println("Goodbye!");
     }
 
@@ -113,9 +118,7 @@ public class ClientApp {
                     userMethods.displayUserProfile(username);
                 } else System.out.println("User does not exist.");
             }
-            case "2" -> {
-                System.out.println("View all users functionality would be implemented here");
-            }
+            case "2" -> System.out.println("View all users functionality would be implemented here");
             case "3" -> {
                 System.out.println("🎰 Drawing Classic Lottery...");
                 lotteryMethods.drawClassicLottery();
@@ -123,6 +126,12 @@ public class ClientApp {
             }
 
             case "4" -> lotto649AdminMenu();
+
+            case "5" -> {
+                System.out.println("Enter Custom TCP command: ");
+                String command = input.nextLine().trim();
+                System.out.println(tcpConnection.sendMessage(command));
+            }
 
             case "9" -> {
                 System.out.println("Logged out.");
@@ -164,7 +173,6 @@ public class ClientApp {
                     System.out.println("Error getting round info: " + e.getMessage());
                 }
             }
-            case "4" -> { return; }
             default -> System.out.println("Invalid choice");
         }
     }
@@ -293,7 +301,7 @@ public class ClientApp {
                         return;
                     }
 
-                    String result = lotteryMethods.purchaseLotto649Ticket(currentUser, numbers);
+                    String result = lotteryMethods.purchaseLotto649Ticket(currentUser, numbersInput);
                     System.out.println(result);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
@@ -320,7 +328,7 @@ public class ClientApp {
                     List<Integer> randomNumbers = lotteryMethods.generateRandomNumbers();
                     System.out.println("Your quick pick numbers: " + randomNumbers);
 
-                    String result = lotteryMethods.purchaseLotto649Ticket(currentUser, randomNumbers);
+                    String result = lotteryMethods.purchaseLotto649Ticket(currentUser, randomNumbers.toString());
                     System.out.println(result);
                 } catch (Exception e) {
                     System.out.println("Error: " + e.getMessage());
@@ -330,7 +338,7 @@ public class ClientApp {
         }
     }
 
-    public static void main(String[] args) {
-        new ClientApp().startClient();
+    public static void main(String[] args) throws IOException {
+        new ClientApp().startClient("localhost", 5000);
     }
 }

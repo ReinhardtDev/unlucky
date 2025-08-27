@@ -1,6 +1,5 @@
 package com.unlucky.unlucky.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.unlucky.unlucky.logging.LoggingService;
@@ -13,48 +12,37 @@ public class LotteryMethods {
     private final Connection connection = new Connection("http://localhost:8080");
     private final ObjectMapper mapper = new ObjectMapper();
     private final Random random = new Random();
+    private final TCPConnection tcpConnection;
 
-    public LotteryMethods() {
+    public LotteryMethods(TCPConnection tcpConnection) {
+        this.tcpConnection = tcpConnection;
     }
 
     public String purchaseClassicTicket(String username, int quantity) {
         try {
             long start = System.nanoTime();
-
-            String requestBody = "{\"quantity\":" + quantity + "}";
-            String response = connection.restPostRequest(
-                    requestBody,
-                    "/api/lottery/classic/purchase?username=" + username
-            );
-
-            List<Map<String, Object>> ticketsData = mapper.readValue(response, new TypeReference<List<Map<String, Object>>>() {});
+            String command = "CLASSIC PURCHASE " + username + " " + quantity;
+            String response = tcpConnection.sendMessage(command);
 
             long end = System.nanoTime();
             double elapsed = (double) (end - start) / 1000000;
             loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_CLASSIC, elapsed, username, String.valueOf(quantity));
 
-            return "Purchased " + ticketsData.size() + " classic lottery tickets";
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Failed to purchase ticket: " + e.getMessage());
         }
     }
 
-    public String purchaseLotto649Ticket(String username, List<Integer> numbers) {
+    public String purchaseLotto649Ticket(String username, String numbers) {
         try {
             long start = System.nanoTime();
-            String numbersJson = mapper.writeValueAsString(numbers);
-            String response = connection.restPostRequest(
-                    numbersJson,
-                    "/api/lottery/lotto649/purchase?username=" + username
-            );
+            String command = "LOTTO649 PURCHASE " + username + " " + numbers;
+            tcpConnection.sendMessage(command);
 
             long end = System.nanoTime();
             double elapsed = (double) (end - start) / 1000000;
-            StringBuilder numberString = new StringBuilder();
-            for (Integer number : numbers) {
-                numberString.append(number).append(", ");
-            }
-            loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_649, elapsed, username, numberString.toString());
+            loggingService.log(LoggingService.ACTION.PURCHASE_TICKET_649, elapsed, username, numbers);
 
             return "Purchased Lotto 6/49 ticket with numbers: " + numbers;
         } catch (Exception e) {
@@ -119,7 +107,7 @@ public class LotteryMethods {
         try {
             long start = System.nanoTime();
 
-            String response = connection.restPostRequest("{}", "/api/lottery/classic/draw");
+            String response = connection.restPostRequest("{}", "/api/lottery/classic/draw"); //connection.sendMessage()
             Map<String, Object> result = mapper.readValue(response, Map.class);
 
             System.out.println("🎉 CLASSIC LOTTERY DRAW COMPLETED!");
@@ -141,7 +129,7 @@ public class LotteryMethods {
         try {
             long start = System.nanoTime();
 
-            String response = connection.restPostRequest("{}", "/api/lottery/lotto649/draw");
+            String response = connection.restPostRequest("{}", "/api/lottery/lotto649/draw"); //connection.sendMessage()
             Map<String, Object> result = mapper.readValue(response, Map.class);
 
             System.out.println("🎉 LOTTO 6/49 DRAW COMPLETED!");
@@ -170,7 +158,7 @@ public class LotteryMethods {
 
     public int claimWinnings(String username) {
         try {
-            String response = connection.restPostRequest("{}", "/api/lottery/lotto649/claim?username=" + username);
+            String response = connection.restPostRequest("{}", "/api/lottery/lotto649/claim?username=" + username); //connection.sendMessage()
             return Integer.parseInt(response);
         } catch (Exception e) {
             throw new RuntimeException("Failed to claim winnings: " + e.getMessage());
@@ -179,7 +167,7 @@ public class LotteryMethods {
 
     public void startNewLotto649Round() {
         try {
-            connection.restPostRequest("{}", "/api/lottery/lotto649/new-round");
+            connection.restPostRequest("{}", "/api/lottery/lotto649/new-round"); //connection.sendMessage()
             System.out.println("New Lotto 6/49 round started!");
         } catch (Exception e) {
             throw new RuntimeException("Failed to start new round: " + e.getMessage());
@@ -188,7 +176,7 @@ public class LotteryMethods {
 
     public Map<String, Object> getCurrentLotto649Round() {
         try {
-            String response = connection.restGetRequest("/api/lottery/lotto649/round-info");
+            String response = connection.restGetRequest("/api/lottery/lotto649/round-info"); //connection.sendMessage()
             return mapper.readValue(response, Map.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to get round info: " + e.getMessage());

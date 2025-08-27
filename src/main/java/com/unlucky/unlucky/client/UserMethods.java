@@ -43,16 +43,6 @@ public class UserMethods {
         return email.matches(regex);
     }
 
-    public int getBalance(String username) {
-        try {
-            User user = mapper.readValue(connection.restGetRequest("/api/users/" + username + "/profile"), User.class);
-            return user.getBalance();
-        } catch (Exception e) {
-            System.err.println("Error getting balance: " + e.getMessage());
-            return 0; // Fallback balance
-        }
-    }
-
     public User getUserProfile(String username) {
         try {
             return mapper.readValue(connection.restGetRequest("/api/users/" + username + "/profile"), User.class);
