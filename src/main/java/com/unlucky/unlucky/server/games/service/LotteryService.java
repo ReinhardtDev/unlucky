@@ -47,6 +47,7 @@ public class LotteryService {
             ticket.setTicketNumber(generateTicketNumber());
             ticket.setPurchaseDate(LocalDateTime.now());
             ticket.setWinner(false);
+            ticket.setActive(true);
             ticket.setTest(false);
             tickets.add(classicLotteryRepository.save(ticket));
         }
@@ -126,6 +127,8 @@ public class LotteryService {
         ticket.setPurchaseDate(LocalDateTime.now());
         ticket.setMatchingNumbers(0);
         ticket.setWinner(false);
+        ticket.setActive(true);
+        ticket.setTest(false);
 
         return lotto649Repository.save(ticket);
     }
