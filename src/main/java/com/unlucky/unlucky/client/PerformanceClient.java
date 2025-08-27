@@ -15,7 +15,7 @@ public class PerformanceClient {
     private final TCPConnection tcpConnection = new TCPConnection();
     private final LotteryMethods lotteryMethods = new LotteryMethods(tcpConnection);
     private final LoggingService loggingService = new LoggingService();
-    private final UserMethods userMethods = new UserMethods();;
+    private final UserMethods userMethods = new UserMethods();
 
     public PerformanceClient() {
     }
