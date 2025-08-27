@@ -69,7 +69,7 @@ public class PerformanceClient {
             User randomUser = users.get(randomIndex);
 
             //Choose a random lottery, then buy a ticket
-            int randomLottery = rand.nextInt(2);
+            int randomLottery = rand.nextInt(1);
             if (randomLottery == 0) {
                 lotteryMethods.purchaseClassicTicket(randomUser.getUsername(), 5);
                 executorService.submit(() -> lotteryMethods.purchaseClassicTicket(randomUser.getUsername(), 1));

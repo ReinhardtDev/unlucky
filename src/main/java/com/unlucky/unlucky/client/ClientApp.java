@@ -180,7 +180,7 @@ public class ClientApp {
     private boolean homeMenu() throws JsonProcessingException {
         System.out.println("\n___UNLUCKY_HOME_MENU___");
         System.out.println("Logged in as " + currentUser);
-        System.out.println("1) View Profile \n2) Add Currency \n3) Classic Lottery \n4) Lotto 649 \n5) Claim Winnings \n6) Show ticket history \n9) Logout \n0) Exit");
+        System.out.println("1) View Profile \n2) Add Currency \n3) Classic Lottery \n4) Lotto 649 \n5) Claim Winnings \n9) Logout \n0) Exit");
         System.out.print("> ");
         String choice = input.nextLine().trim();
 
@@ -215,8 +215,6 @@ public class ClientApp {
                     System.out.println("Error claiming winnings: " + e.getMessage());
                 }
             }
-            case "6" -> userMethods.showTicketHistory(currentUser);
-
             case "9" -> {
                 currentUser = null;
                 System.out.println("Logged out.");
