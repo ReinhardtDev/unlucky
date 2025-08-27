@@ -24,8 +24,20 @@ public class Lotto649Ticket {
     private LocalDateTime purchaseDate;
     private Integer matchingNumbers;
     private boolean winner;
+    private boolean active;
+    private boolean test;
 
     public Lotto649Ticket() {}
+
+    public Lotto649Ticket(User user, List<Integer> numbers, LocalDateTime purchaseDate, Integer matchingNumbers, boolean winner, boolean active, boolean test) {
+        this.user = user;
+        this.numbers = numbers;
+        this.purchaseDate = purchaseDate;
+        this.matchingNumbers = matchingNumbers;
+        this.winner = winner;
+        this.active = active;
+        this.test = test;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -44,4 +56,10 @@ public class Lotto649Ticket {
 
     public boolean isWinner() { return winner; }
     public void setWinner(boolean winner) { this.winner = winner; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public boolean isTest() { return test; }
+    public void setTest(boolean test) { this.test = test; }
 }

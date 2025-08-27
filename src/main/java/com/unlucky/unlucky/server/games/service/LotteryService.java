@@ -47,6 +47,7 @@ public class LotteryService {
             ticket.setTicketNumber(generateTicketNumber());
             ticket.setPurchaseDate(LocalDateTime.now());
             ticket.setWinner(false);
+            ticket.setTest(false);
             tickets.add(classicLotteryRepository.save(ticket));
         }
 
@@ -56,26 +57,37 @@ public class LotteryService {
     @Transactional
     public Map<String, Object> drawClassicLottery() {
         List<ClassicLotteryTicket> allTickets = classicLotteryRepository.findAll();
+        List<ClassicLotteryTicket> filteredTickets = new ArrayList<>();
+        for (ClassicLotteryTicket ticket : allTickets) {
+            if (ticket.isActive()) {
+                filteredTickets.add(ticket);
+            }
+        }
         if (allTickets.isEmpty()) {
             throw new RuntimeException("No tickets to draw");
         }
 
-        ClassicLotteryTicket winner = allTickets.get(random.nextInt(allTickets.size()));
+        ClassicLotteryTicket winner = filteredTickets.get(random.nextInt(filteredTickets.size()));
         winner.setWinner(true);
         classicLotteryRepository.save(winner);
 
         User winningUser = winner.getUser();
-        int prize = (int) (allTickets.size() * 1.5);
+        int prize = (int) (filteredTickets.size() * 1.5);
         winningUser.setBalance(winningUser.getBalance() + prize);
         userRepository.save(winningUser);
 
-        classicLotteryRepository.deleteAll();
+        for (ClassicLotteryTicket ticket : filteredTickets) {
+            if(!ticket.isTest()) {
+                ticket.setActive(false);
+                classicLotteryRepository.save(ticket);
+            }
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("winner", winningUser.getUsername());
         result.put("ticketNumber", winner.getTicketNumber());
         result.put("prize", prize);
-        result.put("totalTickets", allTickets.size());
+        result.put("totalTickets", filteredTickets.size());
 
         return result;
     }
@@ -123,11 +135,18 @@ public class LotteryService {
         List<Integer> winningNumbers = generateWinningNumbers();
         List<Lotto649Ticket> allTickets = lotto649Repository.findAll();
 
+        List<Lotto649Ticket> filteredTickets = new ArrayList<>();
+        for (Lotto649Ticket ticket : allTickets) {
+            if (ticket.isActive()) {
+                filteredTickets.add(ticket);
+            }
+        }
+
         Map<String, Object> roundResult = new HashMap<>();
         roundResult.put("winningNumbers", winningNumbers);
         List<Map<String, Object>> winners = new ArrayList<>();
 
-        for (Lotto649Ticket ticket : allTickets) {
+        for (Lotto649Ticket ticket : filteredTickets) {
             int matches = (int) ticket.getNumbers().stream()
                     .filter(winningNumbers::contains)
                     .count();
@@ -155,10 +174,14 @@ public class LotteryService {
             }
         }
 
-        lotto649Repository.saveAll(allTickets);
         roundResult.put("winners", winners);
 
-        lotto649Repository.deleteAll();
+        for(Lotto649Ticket ticket : filteredTickets) {
+            if(!ticket.isTest()) {
+                ticket.setActive(false);
+            }
+            lotto649Repository.save(ticket);
+        }
 
         return roundResult;
     }

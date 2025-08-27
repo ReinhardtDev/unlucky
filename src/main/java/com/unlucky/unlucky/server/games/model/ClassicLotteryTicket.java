@@ -18,8 +18,19 @@ public class ClassicLotteryTicket {
     private String ticketNumber;
     private LocalDateTime purchaseDate;
     private boolean winner;
+    private boolean active;
+    private boolean test;
 
     public ClassicLotteryTicket() {}
+
+    public ClassicLotteryTicket(User user, String ticketNumber, LocalDateTime purchaseDate, boolean winner, boolean active, boolean test) {
+        this.user = user;
+        this.ticketNumber = ticketNumber;
+        this.purchaseDate = purchaseDate;
+        this.winner = winner;
+        this.active = active;
+        this.test = test;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -35,4 +46,10 @@ public class ClassicLotteryTicket {
 
     public boolean isWinner() { return winner; }
     public void setWinner(boolean winner) { this.winner = winner; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public boolean isTest() { return test; }
+    public void setTest(boolean test) { this.test = test; }
 }
